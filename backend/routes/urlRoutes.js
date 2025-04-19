@@ -6,7 +6,8 @@ const {
   getOriginalUrl,
   updateShortUrl,
   deleteShortUrl,
-  getStats
+  getStats,
+  getAllUrls
 } = require("../controller/urlController");
 
 // Create a new short URL
@@ -23,5 +24,9 @@ router.delete("/:shortCode", deleteShortUrl);
 
 // Get access statistics for a short URL
 router.get("/:shortCode/stats", getStats);
+
+// Get all short URLs for a user 
+router.post("/all", getAllUrls);
+
 
 module.exports = router;

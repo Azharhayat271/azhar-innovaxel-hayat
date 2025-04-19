@@ -1,8 +1,7 @@
-
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { 
+import {
   Table,
   TableBody,
   TableCell,
@@ -10,40 +9,88 @@ import {
   TableHeader,
   TableRow,
 } from "./ui/table";
+import { BASE_URL } from "../utils/baseUrl";
+import { toast } from "sonner";
 
 interface URLData {
   id: string;
-  originalUrl: string;
-  shortUrl: string;
+  url: string;
+  shortCode: string;
   createdAt: string;
-  hits: number;
+  accessCount: number;
 }
 
-const PLACEHOLDER_DATA: URLData[] = [
-  {
-    id: "1",
-    originalUrl: "https://www.example.com/very/long/url/that/needs/shortening",
-    shortUrl: "http://short.url/abc123",
-    createdAt: "2024-04-19",
-    hits: 145
-  },
-  {
-    id: "2",
-    originalUrl: "https://www.example.com/another/long/url/example",
-    shortUrl: "http://short.url/def456",
-    createdAt: "2024-04-18",
-    hits: 89
-  },
-  // Add more placeholder data as needed
-];
-
 export function URLTable() {
+  const [data, setData] = useState<URLData[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [data] = useState<URLData[]>(PLACEHOLDER_DATA);
 
-  const filteredData = data.filter(item =>
-    item.originalUrl.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.shortUrl.toLowerCase().includes(searchTerm.toLowerCase())
+  // Modal states
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [editShortCode, setEditShortCode] = useState<string | null>(null);
+  const [editUrl, setEditUrl] = useState<string>("");
+
+  useEffect(() => {
+    fetchURLs();
+  }, []);
+
+  const fetchURLs = async () => {
+    try {
+      const res = await fetch(`${BASE_URL}/shorten/all`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({}),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to fetch URLs");
+      setData(json);
+    } catch (error: any) {
+      toast.error(error.message || "Error fetching URL list");
+    }
+  };
+
+  const handleDelete = async (shortCode: string) => {
+    try {
+      const res = await fetch(`${BASE_URL}/shorten/${shortCode}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Failed to delete URL");
+      toast.success("URL deleted successfully");
+      fetchURLs();
+    } catch (error: any) {
+      toast.error(error.message || "Error deleting URL");
+    } finally {
+      setConfirmDelete(null);
+    }
+  };
+
+  const handleEdit = async () => {
+    if (!editShortCode || !editUrl.trim()) return;
+    try {
+      const res = await fetch(`${BASE_URL}/shorten/${editShortCode}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ url: editUrl }),
+      });
+
+      if (!res.ok) throw new Error("Failed to update URL");
+      toast.success("URL updated successfully");
+      fetchURLs();
+    } catch (error: any) {
+      toast.error(error.message || "Error updating URL");
+    } finally {
+      setEditShortCode(null);
+      setEditUrl("");
+    }
+  };
+
+  const filteredData = data.filter(
+    (item) =>
+      item.url.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.shortCode.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -56,8 +103,8 @@ export function URLTable() {
           className="max-w-sm"
         />
       </div>
-      
-      <div className="border rounded-lg bg-white/50 backdrop-blur-sm">
+
+      <div className="border rounded-lg bg-white/50 backdrop-blur-sm overflow-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -71,14 +118,39 @@ export function URLTable() {
           <TableBody>
             {filteredData.map((url) => (
               <TableRow key={url.id}>
-                <TableCell className="max-w-[300px] truncate">{url.originalUrl}</TableCell>
-                <TableCell>{url.shortUrl}</TableCell>
-                <TableCell>{url.createdAt}</TableCell>
-                <TableCell>{url.hits}</TableCell>
+                <TableCell className="max-w-[300px] truncate">{url.url}</TableCell>
+                <TableCell>
+                  <a
+                    href={`${window.location.origin}/${url.shortCode}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline"
+                  >
+                    {window.location.origin}/{url.shortCode}
+                  </a>
+                </TableCell>
+                <TableCell>{new Date(url.createdAt).toLocaleDateString()}</TableCell>
+                <TableCell>{url.accessCount}</TableCell>
                 <TableCell>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm">Edit</Button>
-                    <Button variant="outline" size="sm" className="text-red-600">Delete</Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setEditShortCode(url.shortCode);
+                        setEditUrl(url.url);
+                      }}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-red-600"
+                      onClick={() => setConfirmDelete(url.shortCode)}
+                    >
+                      Delete
+                    </Button>
                   </div>
                 </TableCell>
               </TableRow>
@@ -86,6 +158,48 @@ export function URLTable() {
           </TableBody>
         </Table>
       </div>
+
+      {/* Edit Modal */}
+      {editShortCode && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-md space-y-4 w-full max-w-md">
+            <h2 className="text-lg font-semibold">Update URL</h2>
+            <Input
+              type="url"
+              value={editUrl}
+              onChange={(e) => setEditUrl(e.target.value)}
+              placeholder="Enter new URL"
+            />
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setEditShortCode(null)}>
+                Cancel
+              </Button>
+              <Button onClick={handleEdit}>Update</Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {confirmDelete && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-md space-y-4 w-full max-w-sm">
+            <h2 className="text-lg font-semibold">Confirm Deletion</h2>
+            <p>Are you sure you want to delete this URL?</p>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setConfirmDelete(null)}>
+                Cancel
+              </Button>
+              <Button
+                className="bg-red-600 hover:bg-red-700 text-white"
+                onClick={() => handleDelete(confirmDelete)}
+              >
+                Delete
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

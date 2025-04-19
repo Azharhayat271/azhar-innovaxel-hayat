@@ -1,8 +1,8 @@
-
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { toast } from "sonner";
+import { BASE_URL } from "./../utils/baseUrl"; // adjust import path as needed
 
 export function URLShortenerForm() {
   const [url, setUrl] = useState("");
@@ -10,17 +10,33 @@ export function URLShortenerForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!url) {
-      toast.error("Please enter a URL");
+
+    if (!url.trim()) {
+      toast.error("Please enter a valid URL");
       return;
     }
 
     try {
       setIsLoading(true);
-      // Simulating API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      toast.success("URL shortened successfully!");
+
+      const response = await fetch(`${BASE_URL}/shorten`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ url }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Something went wrong");
+      }
+
+      toast.success(`Short URL: ${data.shortCode}`);
       setUrl("");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to shorten URL");
     } finally {
       setIsLoading(false);
     }

@@ -129,3 +129,19 @@ exports.getStats = async (req, res) => {
     res.status(500).json({ error: "Server error while retrieving stats." });
   }
 };
+
+// GET All URLs (GET /api/shorten)
+exports.getAllUrls = async (req, res) => {
+  try {
+    console.log("Fetching all URLs..."); // Add this line
+    const urls = await Url.find();
+    console.log("URLs found:", urls); // Add this line
+    if (!urls || urls.length === 0) {
+      return res.status(404).json({ error: "No URLs found" });
+    }
+    res.status(200).json(urls);
+  } catch (err) {
+    console.error("Error fetching URLs:", err);
+    res.status(500).json({ error: "Failed to fetch URLs" });
+  }
+};
