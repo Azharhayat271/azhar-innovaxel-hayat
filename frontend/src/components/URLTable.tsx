@@ -10,6 +10,7 @@ import {
   TableRow,
 } from "./ui/table";
 import { BASE_URL } from "../utils/baseUrl";
+import { SHORT_URL } from "../utils/baseUrl";
 import { toast } from "sonner";
 
 interface URLData {
@@ -121,12 +122,12 @@ export function URLTable() {
                 <TableCell className="max-w-[300px] truncate">{url.url}</TableCell>
                 <TableCell>
                   <a
-                    href={`${window.location.origin}/${url.shortCode}`}
+                    href={`${SHORT_URL}/${url.shortCode}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-600 hover:underline"
                   >
-                    {window.location.origin}/{url.shortCode}
+                    {`${SHORT_URL}/${url.shortCode}`}
                   </a>
                 </TableCell>
                 <TableCell>{new Date(url.createdAt).toLocaleDateString()}</TableCell>
