@@ -3,7 +3,9 @@
 
 A full-stack URL shortening application built with the **MERN stack (MongoDB, Express.js, React.js, Node.js)**. This project allows users to create, manage, and track short URLs, similar to Bitly.
 
-## All source code is in the Dev branch please use dev branch to inspect the source code.
+## All source code is in the Dev branch please use dev branch to inspect the source code. Visit this URL for live site first API can take upto 50sec as depolyed on free tier server so server go to speed after unactivity.
+
+####  https://azhar-innovaxel-hayat.onrender.com
 
 > Designed for the Innovaxel ASE ssignment.
 
