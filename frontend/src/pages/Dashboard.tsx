@@ -16,6 +16,7 @@ interface URLData {
 
 export default function Dashboard() {
   const [urls, setUrls] = useState<URLData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     fetchURLStats();
@@ -35,6 +36,8 @@ export default function Dashboard() {
       setUrls(json);
     } catch (err: any) {
       toast.error(err.message || "Error loading stats");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -60,12 +63,21 @@ export default function Dashboard() {
           <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <StatsCard title="Total URLs Created" value={totalURLs.toString()} />
-            <StatsCard title="Total Hits" value={totalHits.toLocaleString()} />
+            <StatsCard
+              title="Total URLs Created"
+              value={totalURLs.toString()}
+              isLoading={isLoading}
+            />
+            <StatsCard
+              title="Total Hits"
+              value={totalHits.toLocaleString()}
+              isLoading={isLoading}
+            />
             <StatsCard
               title="Most Popular URL"
               value={mostPopular?.accessCount?.toLocaleString() || "N/A"}
               description={mostPopular?.url || ""}
+              isLoading={isLoading}
             />
           </div>
 
