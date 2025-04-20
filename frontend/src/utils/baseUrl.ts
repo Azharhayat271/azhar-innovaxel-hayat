@@ -1,2 +1,2 @@
-export const BASE_URL = "http://localhost:5000/api"; 
-export const SHORT_URL = "http://localhost:5000";
+export const BASE_URL = "https://short-tgi9.onrender.com/api"; 
+export const SHORT_URL = "https://short-tgi9.onrender.com";
