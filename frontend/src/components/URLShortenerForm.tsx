@@ -3,10 +3,12 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { toast } from "sonner";
 import { BASE_URL } from "./../utils/baseUrl"; // adjust import path as needed
+import { useNavigate } from "react-router-dom";
 
 export function URLShortenerForm() {
   const [url, setUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const naviagator= useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +37,8 @@ export function URLShortenerForm() {
 
       toast.success(`Short URL: ${data.shortCode}`);
       setUrl("");
+      naviagator("/dashboard");
+      
     } catch (error: any) {
       toast.error(error.message || "Failed to shorten URL");
     } finally {
