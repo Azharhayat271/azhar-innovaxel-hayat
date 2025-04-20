@@ -12,6 +12,7 @@ import {
 import { BASE_URL } from "../utils/baseUrl";
 import { SHORT_URL } from "../utils/baseUrl";
 import { toast } from "sonner";
+import { ModalWrapper } from "./ui/modelWrapper"; // adjust path as needed
 
 interface URLData {
   id: string;
@@ -119,7 +120,9 @@ export function URLTable() {
           <TableBody>
             {filteredData.map((url) => (
               <TableRow key={url.id}>
-                <TableCell className="max-w-[300px] truncate">{url.url}</TableCell>
+                <TableCell className="max-w-[300px] truncate">
+                  {url.url}
+                </TableCell>
                 <TableCell>
                   <a
                     href={`${SHORT_URL}/${url.shortCode}`}
@@ -130,7 +133,9 @@ export function URLTable() {
                     {`${SHORT_URL}/${url.shortCode}`}
                   </a>
                 </TableCell>
-                <TableCell>{new Date(url.createdAt).toLocaleDateString()}</TableCell>
+                <TableCell>
+                  {new Date(url.createdAt).toLocaleDateString()}
+                </TableCell>
                 <TableCell>{url.accessCount}</TableCell>
                 <TableCell>
                   <div className="flex gap-2">
@@ -160,46 +165,54 @@ export function URLTable() {
         </Table>
       </div>
 
-      {/* Edit Modal */}
       {editShortCode && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-md space-y-4 w-full max-w-md">
-            <h2 className="text-lg font-semibold">Update URL</h2>
-            <Input
-              type="url"
-              value={editUrl}
-              onChange={(e) => setEditUrl(e.target.value)}
-              placeholder="Enter new URL"
-            />
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setEditShortCode(null)}>
-                Cancel
-              </Button>
-              <Button onClick={handleEdit}>Update</Button>
+        <ModalWrapper>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div className="bg-white p-6 rounded-lg shadow-lg space-y-4 w-full max-w-md mx-4">
+              <h2 className="text-lg font-semibold">Update URL</h2>
+              <Input
+                type="url"
+                value={editUrl}
+                onChange={(e) => setEditUrl(e.target.value)}
+                placeholder="Enter new URL"
+              />
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setEditShortCode(null)}
+                >
+                  Cancel
+                </Button>
+                <Button onClick={handleEdit}>Update</Button>
+              </div>
             </div>
           </div>
-        </div>
+        </ModalWrapper>
       )}
 
-      {/* Delete Confirmation Modal */}
       {confirmDelete && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-md space-y-4 w-full max-w-sm">
-            <h2 className="text-lg font-semibold">Confirm Deletion</h2>
-            <p>Are you sure you want to delete this URL?</p>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setConfirmDelete(null)}>
-                Cancel
-              </Button>
-              <Button
-                className="bg-red-600 hover:bg-red-700 text-white"
-                onClick={() => handleDelete(confirmDelete)}
-              >
-                Delete
-              </Button>
+        <ModalWrapper>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div className="bg-white p-6 rounded-lg shadow-lg space-y-4 w-full max-w-sm mx-4">
+              <h2 className="text-lg font-semibold">Confirm Deletion</h2>
+              <p>Are you sure you want to delete this URL?</p>
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setConfirmDelete(null)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                  onClick={() => handleDelete(confirmDelete)}
+                >
+                  Delete
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
+        </ModalWrapper>
       )}
     </div>
   );
